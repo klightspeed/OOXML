@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Ionic.Zip;
+using System.IO;
 
 namespace TSVCEO.OOXML.Packaging
 {
@@ -44,11 +45,19 @@ namespace TSVCEO.OOXML.Packaging
 
         public static Package Load(string filename)
         {
+            using (Stream stream = File.OpenRead(filename))
+            {
+                return Load(stream);
+            }
+        }
+
+        public static Package Load(Stream stream)
+        {
             Package pkg = new Package();
             pkg.Package = pkg;
             pkg.Parent = pkg;
 
-            using (ZipFile zip = new ZipFile(filename))
+            using (ZipFile zip = ZipFile.Read(stream))
             {
                 foreach (var entry in zip.Entries)
                 {
@@ -65,11 +74,19 @@ namespace TSVCEO.OOXML.Packaging
 
         public void SaveAs(string filename)
         {
+            using (Stream stream = File.Create(filename))
+            {
+                Save(stream);
+            }
+        }
+
+        public void Save(Stream stream)
+        {
             using (ZipFile zip = new ZipFile())
             {
                 this.Save(zip, null);
 
-                zip.Save(filename);
+                zip.Save(stream);
             }
         }
     }
